@@ -499,6 +499,7 @@ from fastapi import Request
 
 @app.post("/api")
 async def analyze_data(request: Request):
+    import traceback
     try:
         form = await request.form()
         questions_file = None
@@ -629,6 +630,10 @@ async def analyze_data(request: Request):
     except HTTPException as he:
         raise he
     except Exception as e:
+        # Print full traceback to the server log for debugging
+        print("\n--- Exception in /api endpoint ---")
+        traceback.print_exc()
+        print("--- End Exception ---\n")
         logger.exception("analyze_data failed")
         raise HTTPException(500, detail=str(e))
 
