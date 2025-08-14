@@ -558,10 +558,12 @@ async def analyze_data(request: Request):
             df.to_pickle(temp_pkl.name)
             pickle_path = temp_pkl.name
 
+            # Only include a preview/sample in the LLM prompt, not the full data
             df_preview = (
                 f"\n\nThe uploaded dataset has {len(df)} rows and {len(df.columns)} columns.\n"
                 f"Columns: {', '.join(df.columns.astype(str))}\n"
-                f"First rows:\n{df.head(5).to_markdown(index=False)}\n"
+                f"Sample rows (first 5):\n{df.head(5).to_markdown(index=False)}\n"
+                f"(The full dataset is available as 'df' for your code.)\n"
             )
 
         # Build rules based on data presence
@@ -571,10 +573,11 @@ async def analyze_data(request: Request):
                 "1) You have access to a pandas DataFrame called `df` and its dictionary form `data`.\n"
                 "2) DO NOT call scrape_url_to_dataframe() or fetch any external data.\n"
                 "3) Use only the uploaded dataset for answering questions.\n"
-                "4) Produce a final JSON object with keys:\n"
+                "4) Never include the full dataset as a variable or list in your code. Always use the provided DataFrame `df` for all operations.\n"
+                "5) Produce a final JSON object with keys:\n"
                 '   - "questions": [ ... original question strings ... ]\n'
                 '   - "code": "..."  (Python code that fills `results` with exact question strings as keys)\n'
-                "5) For plots: use plot_to_base64() helper to return base64 image data under 100kB.\n"
+                "6) For plots: use plot_to_base64() helper to return base64 image data under 100kB.\n"
             )
         else:
             llm_rules = (
